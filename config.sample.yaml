@@ -1,0 +1,54 @@
+
+## === Flux configuration ===
+flux:
+  # Flux namespace
+  namespace: flux-system
+  github:
+    # GitOps repo source branch
+    branch: main
+    # (REQUIRED) GitOps repo namespace. It could be username for personal repositories or organisation name for orgs
+    username: ""
+    # (REQUIRED) GitOps repo name
+    repository: ""
+    # Is GitOps repo owned by organisation
+    organisation: false
+    # (REQUIRED IF YOU BOOTSTRAP FLUX USING THIS REPO) Github PAT token to bootstrap Flux
+    token: ""
+
+## == Common configuration
+# The list of management clusters
+managementClusters:
+  - cluster-1
+
+## ==== k0rdent KCM component configuration ====
+kcm:
+  # namespace where the KCM operator and all providers will be deployed
+  namespace: kcm-system
+  
+  # KCM version
+  version: 0.0.7
+  
+  # KCM helm repository
+  repository: oci://ghcr.io/k0rdent/kcm/charts/kcm
+
+  # The list of providers that should be deployed and configured by KCM
+  providers:
+    - k0smotron
+    - cluster-api-provider-aws
+    - cluster-api-provider-azure
+    - cluster-api-provider-vsphere
+    - cluster-api-provider-openstack
+    - projectsveltos
+  
+  # KCM Helm chart values
+  values:
+    flux2:
+      enabled: false
+    cert-manager:
+      enabled: true
+    controller:
+      # change these values to false when issues are resolved:
+      # https://github.com/k0rdent/kcm/issues/940
+      # https://github.com/k0rdent/kcm/issues/939
+      createManagement: true
+      createAccessManagement: true

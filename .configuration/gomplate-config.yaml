@@ -1,0 +1,6 @@
+inputDir: bin/.templates/
+outputDir: ./
+
+context:
+  .:
+    url: config.yaml

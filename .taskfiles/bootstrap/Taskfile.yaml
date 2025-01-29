@@ -1,0 +1,84 @@
+version: '3'
+
+vars:
+  GOMPLATE_DATASOURCE: '{{.ROOT_DIR}}/config.yaml'
+  CONFIGURATION_DIR: '{{.ROOT_DIR}}/.configuration'
+  GOMPLATE_CONFIG: '{{.CONFIGURATION_DIR}}/gomplate-config.yaml'
+  FLUX_ENV: '{{.CONFIGURATION_DIR}}/flux-config.env'
+
+tasks:
+
+  :init:
+    desc: creates the local configuration to bootstrap FluxCD and render templates
+    cmd: mv {{.GOMPLATE_DATASOURCE | replace ".yaml" ".sample.yaml" }} {{.GOMPLATE_DATASOURCE}}
+    status:
+      - test -f {{.GOMPLATE_DATASOURCE}}
+
+  flux:
+    desc: bootstrap Flux on the management cluster
+    requires:
+      vars: [MANAGEMENT_CLUSTER]
+    cmds:
+      - gomplate -f {{.FLUX_ENV | replace ".env" ".sample.env"}} -o {{.FLUX_ENV}} --config {{.GOMPLATE_CONFIG}}
+      - export $(cat {{.FLUX_ENV}} | xargs) && flux bootstrap github 
+        --token-auth
+        --owner=$GITHUB_USERNAME
+        --repository=$GITHUB_REPO_NAME
+        --namespace=$FLUX_NAMESPACE
+        --branch=$GITHUB_REPO_BRANCH
+        --path=management-clusters/$MANAGEMENT_CLUSTER/flux
+        --personal=$GITHUB_ORGANIZATION
+    preconditions:
+      - sh: which flux
+        msg: |-
+          Please install the flux CLI as described in the official FluxCD documentation
+          https://fluxcd.io/flux/get-started/#install-the-flux-cli
+      - sh: which kubectl
+        msg: |-
+          Install and configure kubectl
+      - sh: which gomplate
+        msg: |-
+          Please install gomplate
+      - sh: test -f {{.GOMPLATE_CONFIG}}
+        msg: |-
+          Please generate the config.yaml file with 'task init' command and fill values
+
+  :configure:
+    desc: Render and validate k0rdent configuration files
+    cmds:
+      - task: prepare-templates
+      - task: render-configs
+  
+  prepare-templates:
+    cmds:
+      - cmd: rm -rf bin/.templates
+      - cmd: gomplate --config {{.GOMPLATE_CONFIG}} -f {{.CONFIGURATION_DIR}}/directory-structure.yaml
+
+  render-configs:
+    sources:
+      - bin/.templates/**/.gitkeep
+    method: none
+    cmds:
+      - cmd: gomplate --config {{.GOMPLATE_CONFIG}}
+      - for: sources
+        cmd: |
+          mkdir -p {{.ITEM | trimPrefix "bin/.templates/" | dir}};
+          cp {{.ITEM}} {{.ITEM | trimPrefix "bin/.templates/"}};
+    preconditions:
+      - sh: test -f {{.GOMPLATE_DATASOURCE}}
+        msg: |-
+          Please generate and fill the config.yaml configuration file with the 'task init' command
+      - sh: test -d bin/.templates
+        msg: |-
+          Please prepare templates for rendering by running the command 'task bootstrap:prepare-templates'
+
+  renovate:
+    desc: Set correct repository for renovate bot
+    vars:
+      value:
+        sh: git remote get-url origin | cut -d':' -f2 | cut -d'/' -f1,2 | sed 's/.git$//'
+    cmds:
+      - yq eval --inplace '.jobs.renovate.steps[1].env.RENOVATE_REPOSITORIES = "[\"{{.value}}\"]"' .github/workflows/renovate.yaml
+    silent: false
+    sources:
+      - .github/workflows/renovate.yaml
