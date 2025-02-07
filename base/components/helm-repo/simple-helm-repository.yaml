@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: helm
+  labels:
+    app.kubernetes.io/instance: kcm-system
+    app.kubernetes.io/part-of: k0rdent
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: helm-registry
+  name: helm-registry
+  namespace: helm
+spec:
+  containers:
+  - image: registry:2
+    name: helm-registry
+    ports:
+    - containerPort: 5000
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helm-registry
+  namespace: helm
+spec:
+  type: NodePort
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+    nodePort: 30500
+  selector:
+    run: helm-registry
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: templates-repository
+  namespace: kcm-system
+spec:
+  insecure: true
+  interval: 10m0s
+  provider: generic
+  type: oci
+  url: oci://helm-registry.helm.svc.cluster.local:5000/helm-charts
