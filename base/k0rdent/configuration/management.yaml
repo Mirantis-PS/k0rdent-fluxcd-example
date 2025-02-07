@@ -1,0 +1,18 @@
+---
+apiVersion: k0rdent.mirantis.com/v1alpha1
+kind: Management
+metadata:
+  labels:
+    k0rdent.mirantis.com/component: kcm
+  name: kcm
+spec:
+  core:
+    kcm: {}
+  providers:
+    - name: k0smotron
+    - name: cluster-api-provider-aws
+    - name: cluster-api-provider-azure
+    - name: cluster-api-provider-vsphere
+    - name: cluster-api-provider-openstack
+    - name: projectsveltos
+  release: kcm-0-0-7
