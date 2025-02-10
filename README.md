@@ -42,3 +42,86 @@ This repo is generated from the k0rdent GitOps repo template.
     ```
 
     Additionaly, each cluster template directory has the `cluster-deployment-patch.yaml` file that can be used later in the main [kustomization.yaml](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file to set the correspinding cluster template reference in any `ClusterDeployment` object. And in each service template directory the `service-template-patch.yaml` file that can be used in the main `kustomization.yaml` file to set the name of `ServiceTemplate` in `ClusterDeployment` or `MultiClusterService` objects.
+
+7. When credentials are configured and some cluster and service templates are ready, we can deploy managed clusters. As an example [we added 2 AWS and 1 Azure clusters](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/0192d8faa21013af2c2b223ea34b6ea790ed55b7). Also, to show how configurations can be managed we prepared the following structure:
+    ```
+    /management-clusters/management-cluster-1/k0rdent/cluster-deployments
+    ├── base
+    |   ├── aws
+    |   |   └── t3-small-us-west-2
+    |   └── azure
+    |       └── standard-a4-westus
+    └── kcm-system
+        ├── aws
+        |   ├── aws-managed-cluster-1
+        |   └── aws-managed-cluster-2
+        └── azure
+            └── azure-managed-cluster-1
+    ```
+
+    - `base` directory contains some base cluster configurations that can be reused by any managed clusters
+    - `kcm-system` is the directory for the `kcm-system` namespace. Currently, all credential and template objects are deployed to that namespace and can be used by `ClusterDeployment` objects that deployed to the same namespace. As an example, we use `kcm-system` as the namespace where k0rdent platform admins develop and test templates and cluster deployments. We deployed several managed clusters:
+      1. `aws-managed-cluster-1`:
+        - it uses the `t3-small-us-west-2` ClusterDeployment base
+        - in the main [`kustomization.yaml`](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file it's specified that it should use the `custom-aws-standalone-cp-0-0-1` ClusterTemplate
+        - in the main [`kustomization.yaml`](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file it's specified that it should use the `aws-cloud-1` Credential
+        - in the main [`kustomization.yaml`](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file it's specified that `custom-ingress-nginx-4-11-0` service must be deployed to the managed cluster 
+      2. `aws-managed-cluster-2`:
+        - it uses the `t3-small-us-west-2` ClusterDeployment base
+        - in the main [`kustomization.yaml`](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file it's specified that it should use the `custom-aws-standalone-cp-0-0-1` ClusterTemplate
+        - in the main [`kustomization.yaml`](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file it's specified that it should use the `aws-cloud-2` Credential
+        - in the main [`kustomization.yaml`](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file it's specified that `custom-ingress-nginx-4-11-0` service must be deployed to the managed cluster 
+      2. `azure-managed-cluster-1`:
+        - it uses the `t3-small-us-west-2` ClusterDeployment base
+        - in the main [`kustomization.yaml`](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file it's specified that it should use the `custom-azure-standalone-cp-0-0-1` ClusterTemplate
+        - in the main [`kustomization.yaml`](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file it's specified that it should use the `azure-cloud-1` Credential
+
+    After some time we can check that all 3 clusters are fully deployed:
+    ```
+    > kubectl -n kcm-system get clusterdeployments
+    NAME                      READY   STATUS
+    aws-managed-cluster-1     True    ClusterDeployment is ready
+    aws-managed-cluster-2     True    ClusterDeployment is ready
+    azure-managed-cluster-1   True    ClusterDeployment is ready
+    ```
+
+    And we can access all of them to check that they are operational and required services are deployed:
+    1. `aws-managed-cluster-1`:
+        ```
+        > kubectl -n kcm-system get secret aws-managed-cluster-1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > bin/aws-managed-cluster-1.kubeconfig
+
+        > KUBECONFIG=bin/aws-managed-cluster-1.kubeconfig kubectl get no
+        NAME                                   STATUS   ROLES           AGE   VERSION
+        aws-managed-cluster-1-cp-0             Ready    control-plane   21m   v1.31.2+k0s
+        aws-managed-cluster-1-md-cr855-gcwz8   Ready    <none>          19m   v1.31.2+k0s
+        aws-managed-cluster-1-md-cr855-kv6jd   Ready    <none>          19m   v1.31.2+k0s
+
+        > KUBECONFIG=bin/aws-managed-cluster-1.kubeconfig kubectl -n ingress-nginx get po
+        NAME                                        READY   STATUS    RESTARTS   AGE
+        ingress-nginx-controller-86bd747cf9-n5zfj   1/1     Running   0          18m
+        ```
+    2. `aws-managed-cluster-1`:
+        ```
+        > kubectl -n kcm-system get secret aws-managed-cluster-2-kubeconfig -o jsonpath='{.data.value}' | base64 -d > bin/aws-managed-cluster-2.kubeconfig
+        
+        > KUBECONFIG=bin/aws-managed-cluster-2.kubeconfig kubectl get no
+        NAME                                   STATUS   ROLES           AGE   VERSION
+        aws-managed-cluster-2-cp-0             Ready    control-plane   24m   v1.31.2+k0s
+        aws-managed-cluster-2-md-zcw8b-5gnm7   Ready    <none>          21m   v1.31.2+k0s
+        aws-managed-cluster-2-md-zcw8b-t97tv   Ready    <none>          22m   v1.31.2+k0s
+
+        > KUBECONFIG=bin/aws-managed-cluster-2.kubeconfig kubectl -n ingress-nginx get po
+        NAME                                        READY   STATUS    RESTARTS   AGE
+        ingress-nginx-controller-86bd747cf9-gw8xr   1/1     Running   0          23s
+        ```
+    3. `azure-managed-cluster-1`:
+        ```
+        > kubectl -n kcm-system get secret azure-managed-cluster-1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > bin/azure-managed-cluster-1.kubeconfig
+        
+        > KUBECONFIG=bin/azure-managed-cluster-1.kubeconfig kubectl get no
+        NAME                                     STATUS   ROLES           AGE   VERSION
+        azure-managed-cluster-1-cp-0             Ready    control-plane   23m   v1.31.1+k0s
+        azure-managed-cluster-1-md-94sct-vps4l   Ready    <none>          22m   v1.31.1+k0s
+        azure-managed-cluster-1-md-94sct-zvbwq   Ready    <none>          21m   v1.31.1+k0s
+        ```
+    

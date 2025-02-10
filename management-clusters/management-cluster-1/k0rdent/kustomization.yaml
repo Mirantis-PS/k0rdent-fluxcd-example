@@ -6,6 +6,23 @@ resources:
   - multiclusterservices
 patches:
 
+  ### MultiClusterService ###
+  # Global kyverno 3.2.6
+  - path: templates/services/custom-kyverno-3-2-6/service-spec-patch.yaml
+    target:
+      kind: MultiClusterService
+      name: protected-kyverno
+  - path: templates/services/custom-kyverno-3-2-6/cluster-selector-label-patch.yaml
+    target:
+      kind: MultiClusterService
+      name: protected-kyverno
+  - path: templates/services/custom-kyverno-3-2-6/labels-patch.yaml
+    target:
+      kind: ClusterDeployment
+  - path: multiclusterservices/protected-kyverno/labels-patch.yaml
+    target:
+      kind: ClusterDeployment
+
   ### AWS ###
   # Cluster aws-managed-cluster-1
   - path: templates/clusters/aws/custom-aws-standalone-cp-0-0-1/cluster-deployment-patch.yaml
@@ -19,7 +36,7 @@ patches:
   - path: templates/services/custom-ingress-nginx-4-11-0/service-spec-patch.yaml
     target:
       kind: ClusterDeployment
-      name: aws-managed-cluster-1  
+      name: aws-managed-cluster-1
   
   # Cluster aws-managed-cluster-2
   - path: templates/services/custom-ingress-nginx-4-11-0/service-spec-patch.yaml
@@ -33,7 +50,7 @@ patches:
   - path: credentials/aws/aws-cloud-2/cluster-deployment-patch.yaml
     target:
       kind: ClusterDeployment
-      name: aws-managed-cluster-2
+      name: aws-managed-cluster-2  
 
   ### Azure ###
   # Cluster azure-managed-cluster-1

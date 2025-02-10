@@ -1,0 +1,9 @@
+resources:
+  - ../../../../../base/k0rdent/multiclusterservices
+patches:
+  - path: multiclusterservice-patch.yaml
+    target:
+      kind: MultiClusterService
+  - path: name-patch.yaml
+    target:
+      kind: MultiClusterService
