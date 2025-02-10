@@ -44,7 +44,7 @@ patches:
 
   ### AWS ###
   # Cluster aws-production-1
-  - path: templates/clusters/aws/custom-aws-standalone-cp-0-0-1/cluster-deployment-patch.yaml
+  - path: templates/clusters/aws/custom-aws-standalone-cp-0-0-2/cluster-deployment-patch.yaml
     target:
       kind: ClusterDeployment
       name: aws-production-1
@@ -52,7 +52,7 @@ patches:
     target:
       kind: ClusterDeployment
       name: aws-production-1
-  - path: templates/services/custom-ingress-nginx-4-11-0/service-spec-patch.yaml
+  - path: templates/services/custom-ingress-nginx-4-11-3/service-spec-patch.yaml
     target:
       kind: ClusterDeployment
       name: aws-production-1

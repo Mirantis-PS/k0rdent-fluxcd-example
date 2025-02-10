@@ -196,3 +196,19 @@ This repo is generated from the k0rdent GitOps repo template.
     NAME                                       READY   STATUS    RESTARTS   AGE     CHART
     ingress-nginx-controller-cbcf8bf58-7gzs9   1/1     Running   0          2m58s   ingress-nginx-4.11.3
     ```
+
+12. When k0rdent platform admins tested new versions of cluster and service templates, they can be [approved](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/ea101e1adc901b4d9b07eb1537404d4e93744f4f) to the `cluster-management` namespace. We patch the `AccessManagement` object and add corresponding template chains to the access rule list. In the `cluster-management` namespace we can find now these templates:
+
+    ```
+    > kubectl -n cluster-management get credential,clustertemplate,servicetemplate 
+    NAME                                                     READY   DESCRIPTION
+    credential.k0rdent.mirantis.com/aws-credential-cloud-1   true    AWS credentials
+
+    NAME                                                                  VALID
+    clustertemplate.k0rdent.mirantis.com/custom-aws-standalone-cp-0-0-1   true
+    clustertemplate.k0rdent.mirantis.com/custom-aws-standalone-cp-0-0-2   true
+
+    NAME                                                               VALID
+    servicetemplate.k0rdent.mirantis.com/custom-ingress-nginx-4-11-0   true
+    servicetemplate.k0rdent.mirantis.com/custom-ingress-nginx-4-11-3   true
+    ```
