@@ -1,0 +1,6 @@
+resources:
+  - ../../../base/azure/standard-a4-westus
+patches:
+  - path: name-patch.yaml
+    target:
+      kind: ClusterDeployment

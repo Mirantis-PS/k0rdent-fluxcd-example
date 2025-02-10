@@ -1,0 +1,5 @@
+namespace: kcm-system
+
+resources:
+  - aws
+  - azure

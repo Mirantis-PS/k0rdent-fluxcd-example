@@ -21,4 +21,24 @@ This repo is generated from the k0rdent GitOps repo template.
     openstack-credential-cloud-1   true    OpenStack credentials
     openstack-credential-cloud-2   true    OpenStack credentials
     ```
+6. k0rdent provdes a set of built-in cluster and service templates. But to demonstrate how to extend it we [added a set of custom templates](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/17dfe2643e5cb93d6cbfef5bac97e5bebb3a4094) under the `management-clusters/management-cluster-1/k0rdent/templates` directory. Helm charts that used for this example are also added to the `helm-chart-examples` directory. When flux syncs the state from the repo, we have new valid ClusterTemplate and ServiceTemplate objects in the `kcm-system` namespace:
+    ```
+    > kubectl -n kcm-system get clustertemplate
+    NAME                                   VALID
+    custom-aws-standalone-cp-0-0-1         true
+    custom-aws-standalone-cp-0-0-2         true
+    custom-azure-standalone-cp-0-0-1       true
+    custom-azure-standalone-cp-0-0-2       true
+    custom-openstack-standalone-cp-0-0-1   true
+    custom-openstack-standalone-cp-0-0-2   true
+    ```
 
+    ```
+    kubectl -n kcm-system get servicetemplate
+    NAME                          VALID
+    custom-ingress-nginx-4-11-0   true
+    custom-ingress-nginx-4-11-3   true
+    custom-kyverno-3-2-6          true
+    ```
+
+    Additionaly, each cluster template directory has the `cluster-deployment-patch.yaml` file that can be used later in the main [kustomization.yaml](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file to set the correspinding cluster template reference in any `ClusterDeployment` object. And in each service template directory the `service-template-patch.yaml` file that can be used in the main `kustomization.yaml` file to set the name of `ServiceTemplate` in `ClusterDeployment` or `MultiClusterService` objects.

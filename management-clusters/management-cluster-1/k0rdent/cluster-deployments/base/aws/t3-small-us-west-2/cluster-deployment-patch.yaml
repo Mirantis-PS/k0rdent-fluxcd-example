@@ -1,0 +1,13 @@
+kind: ClusterDeployment
+metadata:
+  name: cluster-deployment
+spec:
+  config:
+    region: us-west-2
+    publicIP: true
+    controlPlaneNumber: 1
+    workersNumber: 2
+    controlPlane:
+      instanceType: t3.small
+    worker:
+      instanceType: t3.small

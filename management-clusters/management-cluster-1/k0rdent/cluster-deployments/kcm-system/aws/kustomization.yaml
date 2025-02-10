@@ -1,0 +1,3 @@
+resources:
+  - aws-managed-cluster-1
+  - aws-managed-cluster-2

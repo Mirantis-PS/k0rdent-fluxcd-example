@@ -1,0 +1,6 @@
+resources:
+  - ../../../../../../../base/k0rdent/cluster-deployments
+patches:
+  - path: cluster-deployment-patch.yaml
+    target:
+      kind: ClusterDeployment
