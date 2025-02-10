@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/clusterSelector/matchLabels/kyverno-version
+  value: "3.2.6"

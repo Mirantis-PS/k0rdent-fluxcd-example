@@ -1,0 +1,30 @@
+resources:
+  - ../../../../../../base/k0rdent/templates/services
+patches:
+  - path: service-template-patch.yaml
+    target:
+      kind: ServiceTemplate
+  - path: name-patch.yaml
+    target:
+      kind: ServiceTemplate
+  - path: name-patch.yaml
+    target:
+      kind: ServiceTemplateChain
+  - target:
+      kind: ServiceTemplateChain
+    patch: |
+      - op: add
+        path: /spec/supportedTemplates/-
+        value:
+          name: custom-ingress-nginx-4-11-0
+          availableUpgrades:
+            - name: custom-ingress-nginx-4-11-3
+replacements:
+  - source:
+      kind: ServiceTemplate
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: ServiceTemplateChain
+        fieldPaths:
+          - spec.supportedTemplates.[name=service-template].name

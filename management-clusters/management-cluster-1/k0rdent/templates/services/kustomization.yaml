@@ -1,1 +1,4 @@
-resources: []
+resources:
+  - custom-ingress-nginx-4-11-0
+  - custom-ingress-nginx-4-11-3
+  - custom-kyverno-3-2-6

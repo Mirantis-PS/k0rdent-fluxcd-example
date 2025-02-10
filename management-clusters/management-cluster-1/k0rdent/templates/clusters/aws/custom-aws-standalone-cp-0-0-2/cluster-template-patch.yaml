@@ -1,0 +1,22 @@
+---
+apiVersion: k0rdent.mirantis.com/v1alpha1
+kind: ClusterTemplate
+metadata:
+  name: custom-aws-standalone-cp-0-0-2
+spec:
+  helm:
+    chartSpec:
+      chart: custom-aws-standalone-cp
+      version: 0.0.2
+      interval: 10m0s
+      sourceRef:
+        kind: HelmRepository
+        name: templates-repository
+  providers:
+  - bootstrap-k0smotron
+  - control-plane-k0smotron
+  - infrastructure-aws
+  providerContracts:
+    bootstrap-k0smotron: v1beta1
+    control-plane-k0smotron: v1beta1
+    infrastructure-aws: v1beta2

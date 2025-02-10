@@ -1,0 +1,3 @@
+- op: replace
+  path: /metadata/name
+  value: custom-kyverno-3-2-6

@@ -1,0 +1,21 @@
+resources:
+  - ../../../../../../../base/k0rdent/templates/clusters
+patches:
+  - path: cluster-template-patch.yaml
+    target:
+      kind: ClusterTemplate
+  - path: name-patch.yaml
+    target:
+      kind: ClusterTemplate
+  - path: name-patch.yaml
+    target:
+      kind: ClusterTemplateChain
+replacements:
+  - source:
+      kind: ClusterTemplate
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: ClusterTemplateChain
+        fieldPaths:
+          - spec.supportedTemplates.[name=cluster-template].name

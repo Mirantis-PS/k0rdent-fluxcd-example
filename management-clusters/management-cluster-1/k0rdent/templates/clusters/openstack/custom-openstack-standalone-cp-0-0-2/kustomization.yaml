@@ -1,0 +1,30 @@
+resources:
+  - ../../../../../../../base/k0rdent/templates/clusters
+patches:
+  - path: cluster-template-patch.yaml
+    target:
+      kind: ClusterTemplate
+  - path: name-patch.yaml
+    target:
+      kind: ClusterTemplate
+  - path: name-patch.yaml
+    target:
+      kind: ClusterTemplateChain
+  - target:
+      kind: ClusterTemplateChain
+    patch: |
+      - op: add
+        path: /spec/supportedTemplates/-
+        value:
+          name: custom-openstack-standalone-cp-0-0-1
+          availableUpgrades:
+            - name: custom-openstack-standalone-cp-0-0-2
+replacements:
+  - source:
+      kind: ClusterTemplate
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: ClusterTemplateChain
+        fieldPaths:
+          - spec.supportedTemplates.[name=cluster-template].name

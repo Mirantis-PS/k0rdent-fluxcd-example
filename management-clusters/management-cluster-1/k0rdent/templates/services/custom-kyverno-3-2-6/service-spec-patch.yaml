@@ -1,0 +1,6 @@
+- op: add
+  path: /spec/serviceSpec/services/-
+  value:
+    template: custom-kyverno-3-2-6
+    name: kyverno
+    namespace: kyverno
