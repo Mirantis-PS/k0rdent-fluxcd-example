@@ -1,6 +1,6 @@
 # k0rdent FluxCD GitOps repo example
 
-This repo is generated from the k0rdent GitOps repo template.
+This repo is generated from the k0rdent GitOps repo template for the kcm `0.0.7` version
 
 ## Change log
 
@@ -211,4 +211,17 @@ This repo is generated from the k0rdent GitOps repo template.
     NAME                                                               VALID
     servicetemplate.k0rdent.mirantis.com/custom-ingress-nginx-4-11-0   true
     servicetemplate.k0rdent.mirantis.com/custom-ingress-nginx-4-11-3   true
+    ```
+
+13. As the final step, Platform Engineers [upgrade](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/78cffc868eabb647648fb6121666906685ec4238) the "real" `aws-production-1` cluster and ingress-nginx service. After some time we can check that all nodes in the cluster has the correct version and ingress-nginx service is updated as well:
+    ```
+    > KUBECONFIG=bin/aws-production-1.kubeconfig kubectl get no
+    NAME                              STATUS   ROLES           AGE     VERSION
+    aws-production-1-cp-0             Ready    control-plane   128m    v1.31.3+k0s
+    aws-production-1-md-gczc9-cml2x   Ready    <none>          6m12s   v1.31.3+k0s
+    aws-production-1-md-gczc9-nq4tz   Ready    <none>          9m2s    v1.31.3+k0s
+
+    > KUBECONFIG=bin/aws-production-1.kubeconfig kubectl -n ingress-nginx get po -L helm.sh/chart
+    NAME                                        READY   STATUS    RESTARTS   AGE   CHART
+    ingress-nginx-controller-86bd747cf9-rw9wh   1/1     Running   0          17m   ingress-nginx-4.11.3
     ```
