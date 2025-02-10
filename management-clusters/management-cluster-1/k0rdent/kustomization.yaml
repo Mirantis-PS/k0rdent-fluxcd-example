@@ -41,6 +41,20 @@ patches:
       kind: ClusterDeployment
 
   ### AWS ###
+  # Cluster aws-production-1
+  - path: templates/clusters/aws/custom-aws-standalone-cp-0-0-1/cluster-deployment-patch.yaml
+    target:
+      kind: ClusterDeployment
+      name: aws-production-1
+  - path: credentials/aws/aws-cloud-1/cluster-deployment-patch.yaml
+    target:
+      kind: ClusterDeployment
+      name: aws-production-1
+  - path: templates/services/custom-ingress-nginx-4-11-0/service-spec-patch.yaml
+    target:
+      kind: ClusterDeployment
+      name: aws-production-1
+  
   # Cluster aws-managed-cluster-1
   - path: templates/clusters/aws/custom-aws-standalone-cp-0-0-1/cluster-deployment-patch.yaml
     target:

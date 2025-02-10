@@ -1,0 +1,6 @@
+resources:
+  - ../../../base/aws/t3-small-us-west-2
+patches:
+  - path: name-patch.yaml
+    target:
+      kind: ClusterDeployment    

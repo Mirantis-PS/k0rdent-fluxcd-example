@@ -21,7 +21,7 @@ This repo is generated from the k0rdent GitOps repo template.
     openstack-credential-cloud-1   true    OpenStack credentials
     openstack-credential-cloud-2   true    OpenStack credentials
     ```
-6. k0rdent provdes a set of built-in cluster and service templates. But to demonstrate how to extend it we [added a set of custom templates](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/17dfe2643e5cb93d6cbfef5bac97e5bebb3a4094) under the `management-clusters/management-cluster-1/k0rdent/templates` directory. Helm charts that used for this example are also added to the `helm-chart-examples` directory. When flux syncs the state from the repo, we have new valid ClusterTemplate and ServiceTemplate objects in the `kcm-system` namespace:
+6. k0rdent provdes a set of built-in cluster and service templates. But to demonstrate how to extend it we [added a set of custom templates](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/765724820a72b2edad5b7cf4d60b2bebc085bcdd) under the `management-clusters/management-cluster-1/k0rdent/templates` directory. Helm charts that used for this example are also added to the `helm-chart-examples` directory. When flux syncs the state from the repo, we have new valid ClusterTemplate and ServiceTemplate objects in the `kcm-system` namespace:
     ```
     > kubectl -n kcm-system get clustertemplate
     NAME                                   VALID
@@ -43,7 +43,7 @@ This repo is generated from the k0rdent GitOps repo template.
 
     Additionaly, each cluster template directory has the `cluster-deployment-patch.yaml` file that can be used later in the main [kustomization.yaml](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file to set the correspinding cluster template reference in any `ClusterDeployment` object. And in each service template directory the `service-template-patch.yaml` file that can be used in the main `kustomization.yaml` file to set the name of `ServiceTemplate` in `ClusterDeployment` or `MultiClusterService` objects.
 
-7. When credentials are configured and some cluster and service templates are ready, we can deploy managed clusters. As an example [we added 2 AWS and 1 Azure clusters](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/0192d8faa21013af2c2b223ea34b6ea790ed55b7). Also, to show how configurations can be managed we prepared the following structure:
+7. When credentials are configured and some cluster and service templates are ready, we can deploy managed clusters. As an example [we added 2 AWS and 1 Azure clusters](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/0a4f0a384d979b7d5112c6f077910edfc9ea5422). Also, to show how configurations can be managed we prepared the following structure:
     ```
     /management-clusters/management-cluster-1/k0rdent/cluster-deployments
     ├── base
@@ -124,7 +124,7 @@ This repo is generated from the k0rdent GitOps repo template.
         azure-managed-cluster-1-md-94sct-vps4l   Ready    <none>          22m   v1.31.1+k0s
         azure-managed-cluster-1-md-94sct-zvbwq   Ready    <none>          21m   v1.31.1+k0s
         ```
-8. One of the k0rdent features is `MultiClusterService`, which allows to deploy any service or set of services to multiple `ClusterDeployment`s that are selected by labels or expressions. [As an example](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/b6fe6e2bdcca8c7d6338d98bc2550ea7a2c36b92), we added [`protected-kyverno`](./management-clusters/management-cluster-1/k0rdent/multiclusterservices/protected-kyverno) global service. The version of kyverno for the `MultiClusterService`, required labels for `ClusterDeployment`s are set in the main [kustomization.yaml](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file. This configuration creates the `MultiClusterService` that picks all cluster deployments with `kyverno-version=3.2.6` and `protected=kyverno` labels and deploys the kyverno service specified in the `custom-kyverno-3-2-6` ServiceTemplate. Due to we added these labels to the all existing ClusterDeployments, we can check any of them and make sure that the service is deployed:
+8. One of the k0rdent features is `MultiClusterService`, which allows to deploy any service or set of services to multiple `ClusterDeployment`s that are selected by labels or expressions. [As an example](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/618d63e15f36de082291005d26737cebd12a08eb), we added [`protected-kyverno`](./management-clusters/management-cluster-1/k0rdent/multiclusterservices/protected-kyverno) global service. The version of kyverno for the `MultiClusterService`, required labels for `ClusterDeployment`s are set in the main [kustomization.yaml](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file. This configuration creates the `MultiClusterService` that picks all cluster deployments with `kyverno-version=3.2.6` and `protected=kyverno` labels and deploys the kyverno service specified in the `custom-kyverno-3-2-6` ServiceTemplate. Due to we added these labels to the all existing ClusterDeployments, we can check any of them and make sure that the service is deployed:
     ```
     > KUBECONFIG=bin/aws-managed-cluster-1.kubeconfig kubectl -n kyverno get po  
     NAME                                                       READY   STATUS      RESTARTS   AGE
@@ -138,3 +138,5 @@ This repo is generated from the k0rdent GitOps repo template.
     kyverno-cleanup-update-requests-28986490-sn84m             0/1     Completed   0          7m36s
     kyverno-reports-controller-6f59fb8cd6-l7gbv                1/1     Running     0          30m
     ```
+
+9. Now we have some custom `ClusterTemplate`, `ServiceTemplate`, `Credentials` that are tested in the `kcm-system` namespace and are ready to be released. [As an example](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/eaba96dbf9d9ac206b5fbdc7b20370657e2e15a5), we created the `cluster-management` namespace that supposed to be used by Platform Engineers to deploy the real clusters. And "approved" `credential/aws-credential-cloud-1`, `clustertemplate/custom-aws-standalone-cp-0-0-1`, and `servicetemplate/custom-ingress-nginx-4-11-0` to that namespace. You can find the patch for `AccessManagement` object in the main [`kustomization.yaml` file](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml)

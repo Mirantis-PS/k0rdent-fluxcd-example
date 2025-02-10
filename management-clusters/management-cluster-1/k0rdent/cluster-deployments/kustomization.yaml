@@ -1,2 +1,3 @@
 resources:
   - kcm-system
+  - cluster-management
