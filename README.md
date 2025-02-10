@@ -139,4 +139,43 @@ This repo is generated from the k0rdent GitOps repo template.
     kyverno-reports-controller-6f59fb8cd6-l7gbv                1/1     Running     0          30m
     ```
 
-9. Now we have some custom `ClusterTemplate`, `ServiceTemplate`, `Credentials` that are tested in the `kcm-system` namespace and are ready to be released. [As an example](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/eaba96dbf9d9ac206b5fbdc7b20370657e2e15a5), we created the `cluster-management` namespace that supposed to be used by Platform Engineers to deploy the real clusters. And "approved" `credential/aws-credential-cloud-1`, `clustertemplate/custom-aws-standalone-cp-0-0-1`, and `servicetemplate/custom-ingress-nginx-4-11-0` to that namespace. You can find the patch for `AccessManagement` object in the main [`kustomization.yaml` file](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml)
+9. Now we have some custom `ClusterTemplate`, `ServiceTemplate`, `Credentials` that are tested in the `kcm-system` namespace and are ready to be released. [As an example](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/eaba96dbf9d9ac206b5fbdc7b20370657e2e15a5), we created the `cluster-management` namespace that supposed to be used by Platform Engineers to deploy the real clusters. And "approved" `credential/aws-credential-cloud-1`, `clustertemplate/custom-aws-standalone-cp-0-0-1`, and `servicetemplate/custom-ingress-nginx-4-11-0` to that namespace. You can find the patch for `AccessManagement` object in the main [`kustomization.yaml` file](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml). As a result, we can check that in the newly created `cluster-management` namespace all of these objects are provisioned by the `kcm` operator:
+    ```
+    > kubectl -n cluster-management get credential,clustertemplate,servicetemplate 
+    NAME                                                     READY   DESCRIPTION
+    credential.k0rdent.mirantis.com/aws-credential-cloud-1   true    AWS credentials
+
+    NAME                                                                  VALID
+    clustertemplate.k0rdent.mirantis.com/custom-aws-standalone-cp-0-0-1   true
+
+    NAME                                                               VALID
+    servicetemplate.k0rdent.mirantis.com/custom-ingress-nginx-4-11-0   true
+    ```
+
+10. Next, Platform Engineers [deployed](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/0ab33b6255d7b6d4f8815ced3e4c4818fa49b45d) the "real" production cluster `aws-production-1` in the `cluster-management` namespace using templates and credentials that were provisioned on the previous step. As a result, we can find that the cluster is created and required services are deployed - ingress-nginx (from the `ClusterDeployment` spec) and global kyverno (from the global `MultiClusterService`)
+
+    ```
+    > kubectl -n cluster-management get secret aws-production-1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > bin/aws-production-1.kubeconfig
+
+    > KUBECONFIG=bin/aws-production-1.kubeconfig kubectl get no
+    NAME                              STATUS   ROLES           AGE     VERSION
+    aws-production-1-cp-0             Ready    control-plane   8m55s   v1.31.2+k0s
+    aws-production-1-md-vjnsd-6fkgl   Ready    <none>          3m23s   v1.31.2+k0s
+    aws-production-1-md-vjnsd-hmzb4   Ready    <none>          3m26s   v1.31.2+k0s
+
+    > KUBECONFIG=bin/aws-production-1.kubeconfig kubectl -n ingress-nginx get po
+    NAME                                        READY   STATUS    RESTARTS   AGE
+    ingress-nginx-controller-86bd747cf9-qbl7g   1/1     Running   0          2m9s
+    
+    > KUBECONFIG=bin/aws-production-1.kubeconfig kubectl -n kyverno get po
+    NAME                                                       READY   STATUS      RESTARTS   AGE
+    kyverno-admission-controller-96c5d48b4-jhgsd               1/1     Running     0          5m43s
+    kyverno-background-controller-65f9fd5859-klcl9             1/1     Running     0          5m43s
+    kyverno-cleanup-admission-reports-28986570-8c7td           0/1     Completed   0          5m20s
+    kyverno-cleanup-cluster-admission-reports-28986570-r5kx9   0/1     Completed   0          5m20s
+    kyverno-cleanup-cluster-ephemeral-reports-28986570-sm745   0/1     Completed   0          5m20s
+    kyverno-cleanup-controller-848b4c579d-w8l4f                1/1     Running     0          5m43s
+    kyverno-cleanup-ephemeral-reports-28986570-96s5x           0/1     Completed   0          5m20s
+    kyverno-cleanup-update-requests-28986570-q24m6             0/1     Completed   0          5m20s
+    kyverno-reports-controller-6f59fb8cd6-wp6rd                1/1     Running     0          5m43s
+    ```
