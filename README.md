@@ -179,3 +179,20 @@ This repo is generated from the k0rdent GitOps repo template.
     kyverno-cleanup-update-requests-28986570-q24m6             0/1     Completed   0          5m20s
     kyverno-reports-controller-6f59fb8cd6-wp6rd                1/1     Running     0          5m43s
     ```
+11. On this step, k0rdent platform [admins tested](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/c96b5790558ec6915e0887ae0c3bc66530aba954) the cluster upgrade process with the new cluster template version `custom-aws-standalone-cp-0-0-2` on `aws-managed-cluster-1` cluster deployment and the service upgrade process with the new service template version `custom-ingress-nginx-4-11-3` on `aws-managed-cluster-2` cluster deployment. 
+
+    After some time we can check that `aws-managed-cluster-1` is upgraded to the new k0s version (v1.31.2 -> v1.31.3) as described in the `custom-aws-standalone-cp-0-0-2` cluster templaet:
+    ```
+    KUBECONFIG=bin/aws-managed-cluster-1.kubeconfig kubectl get no
+    NAME                                   STATUS                     ROLES           AGE     VERSION
+    aws-managed-cluster-1-cp-0             Ready                      control-plane   17m     v1.31.3+k0s
+    aws-managed-cluster-1-md-bzgt6-fzvh8   Ready                      <none>          74s     v1.31.3+k0s
+    aws-managed-cluster-1-md-bzgt6-ghnh9   Ready                      <none>          4m16s   v1.31.3+k0
+    ```
+
+    And in `aws-managed-cluster-2` cluster ingress nginx service is upgraded to the new `4.11.3` version:
+    ```
+    > KUBECONFIG=bin/aws-managed-cluster-2.kubeconfig kubectl -n ingress-nginx get po -L helm.sh/chart
+    NAME                                       READY   STATUS    RESTARTS   AGE     CHART
+    ingress-nginx-controller-cbcf8bf58-7gzs9   1/1     Running   0          2m58s   ingress-nginx-4.11.3
+    ```

@@ -20,8 +20,10 @@ patches:
             - aws-credential-cloud-1
           clusterTemplateChains:
             - custom-aws-standalone-cp-0-0-1
+            - custom-aws-standalone-cp-0-0-2
           serviceTemplateChains:
             - custom-ingress-nginx-4-11-0
+            - custom-ingress-nginx-4-11-3
 
   ### MultiClusterService ###
   # Global kyverno 3.2.6
