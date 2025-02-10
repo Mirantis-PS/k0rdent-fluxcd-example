@@ -6,6 +6,23 @@ resources:
   - multiclusterservices
 patches:
 
+  ### AccessManagement ###
+  - target:
+      kind: AccessManagement
+    patch: |-
+      - op: add
+        path: /spec/accessRules/-
+        value:
+          targetNamespaces:
+            list:
+              - cluster-management
+          credentials:
+            - aws-credential-cloud-1
+          clusterTemplateChains:
+            - custom-aws-standalone-cp-0-0-1
+          serviceTemplateChains:
+            - custom-ingress-nginx-4-11-0
+
   ### MultiClusterService ###
   # Global kyverno 3.2.6
   - path: templates/services/custom-kyverno-3-2-6/service-spec-patch.yaml

@@ -1,2 +1,3 @@
 resources:
   - ../../../../base/k0rdent/configuration
+  - cluster-management-namespace.yaml

@@ -124,4 +124,17 @@ This repo is generated from the k0rdent GitOps repo template.
         azure-managed-cluster-1-md-94sct-vps4l   Ready    <none>          22m   v1.31.1+k0s
         azure-managed-cluster-1-md-94sct-zvbwq   Ready    <none>          21m   v1.31.1+k0s
         ```
-    
+8. One of the k0rdent features is `MultiClusterService`, which allows to deploy any service or set of services to multiple `ClusterDeployment`s that are selected by labels or expressions. [As an example](https://github.com/Mirantis-PS/k0rdent-fluxcd-example/commit/b6fe6e2bdcca8c7d6338d98bc2550ea7a2c36b92), we added [`protected-kyverno`](./management-clusters/management-cluster-1/k0rdent/multiclusterservices/protected-kyverno) global service. The version of kyverno for the `MultiClusterService`, required labels for `ClusterDeployment`s are set in the main [kustomization.yaml](./management-clusters/management-cluster-1/k0rdent/kustomization.yaml) file. This configuration creates the `MultiClusterService` that picks all cluster deployments with `kyverno-version=3.2.6` and `protected=kyverno` labels and deploys the kyverno service specified in the `custom-kyverno-3-2-6` ServiceTemplate. Due to we added these labels to the all existing ClusterDeployments, we can check any of them and make sure that the service is deployed:
+    ```
+    > KUBECONFIG=bin/aws-managed-cluster-1.kubeconfig kubectl -n kyverno get po  
+    NAME                                                       READY   STATUS      RESTARTS   AGE
+    kyverno-admission-controller-96c5d48b4-w8b44               1/1     Running     0          30m
+    kyverno-background-controller-65f9fd5859-6gm25             1/1     Running     0          30m
+    kyverno-cleanup-admission-reports-28986490-2kvz9           0/1     Completed   0          7m36s
+    kyverno-cleanup-cluster-admission-reports-28986490-c6nb5   0/1     Completed   0          7m36s
+    kyverno-cleanup-cluster-ephemeral-reports-28986490-2k6g4   0/1     Completed   0          7m36s
+    kyverno-cleanup-controller-848b4c579d-5nbwz                1/1     Running     0          30m
+    kyverno-cleanup-ephemeral-reports-28986490-l5kgs           0/1     Completed   0          7m36s
+    kyverno-cleanup-update-requests-28986490-sn84m             0/1     Completed   0          7m36s
+    kyverno-reports-controller-6f59fb8cd6-l7gbv                1/1     Running     0          30m
+    ```
